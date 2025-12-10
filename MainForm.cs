@@ -1,5 +1,6 @@
 ﻿using StockMonitoringDotnetFramwork.ChildForm;
 using StockMonitoringDotnetFramwork.Classes;
+using StockMonitoringDotnetFramwork.Data;
 using StockMonitoringDotnetFramwork.Models;
 using System;
 using System.Collections.Generic;
@@ -9,6 +10,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Ports;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -17,14 +19,16 @@ namespace StockMonitoringDotnetFramwork
 {
     public partial class MainForm : Form
     {
+        private SerialPort port;
+
         private static readonly SerialPort serialPort1 = new SerialPort();
         private static readonly SerialPort serialPort2 = new SerialPort();
         private static readonly SerialPort serialPort3 = new SerialPort();
         private static readonly SerialPort serialPort4 = new SerialPort();
-        private static string ReadingText1;
-        private static string ReadingText2;
-        private static string ReadingText3;
-        private static string ReadingText4;
+        //private static string ReadingText1;
+        //private static string ReadingText2;
+        //private static string ReadingText3;
+        //private static string ReadingText4;
         private static int Counter1;
         private static int Counter2;
         private static int Counter3;
@@ -32,11 +36,23 @@ namespace StockMonitoringDotnetFramwork
         readonly CancellationTokenSource[] cts = new CancellationTokenSource[3];
         private readonly Dictionary<string, string> PiecePerKanbanDic = new Dictionary<string, string>();
 
+        private static StringBuilder buffer1 = new StringBuilder();
+        private static StringBuilder buffer2 = new StringBuilder();
+        private static StringBuilder buffer3 = new StringBuilder();
+        private static StringBuilder buffer4 = new StringBuilder();
+        private static StringBuilder buffer5 = new StringBuilder();
+        private static StringBuilder buffer6 = new StringBuilder();
+
+        private static MainForm Instance;
+
+
 
 
         public MainForm()
         {
             InitializeComponent();
+            Instance = this;
+
 
         }
 
@@ -53,14 +69,14 @@ namespace StockMonitoringDotnetFramwork
         private void MainForm_Load(object sender, EventArgs e)
         {
             InitialSetup();
-            LoginSimulate();
+
             IntialDataGridView(DgvShow);
 
 
-            InputInformation uc = new InputInformation();
-            uc.Dock = DockStyle.Fill;
-            panel2.Controls.Clear();
-            panel2.Controls.Add(uc);
+            //InputInformation uc = new InputInformation();
+            //uc.Dock = DockStyle.Fill;
+            //panel2.Controls.Clear();
+            //panel2.Controls.Add(uc);
 
 
         }
@@ -83,45 +99,9 @@ namespace StockMonitoringDotnetFramwork
             SerialPortSetting.Close(serialPort4);
         }
 
-        private void LoginSimulate()
-        {
-            //var login = new AccountLogin();
-            //Parameter.User = login.Login("6000774", "123456");
-            //if (Parameter.User != null)
-            //{
-            //    Parameter.Permition = "on";
-            //    Parameter.SectionCode = "4320";
-            //    string path = string.Format("{0}\\startup.txt", Parameter.PortSetting);
-            //    using (var db = new WGRContext())
-            //    {
-            //        var master = db.StockLists
-            //            .Where(s => s.SectionCode == Parameter.SectionCode)
-            //            .Select(s => new MasterPiece
-            //            {
-            //                PartNumberId = s.PartNumber,
-            //                PiecePerKanban = Convert.ToInt32(s.PiecePerKanban)
-            //            }).ToList();
-            //        Parameter.masterPieces.Clear();
-            //        foreach (var m in master)
-            //        {
-            //            Parameter.masterPieces.Add(m.PartNumberId, m.PiecePerKanban);
-            //        }
-            //        if (master.Count == 0)
-            //        {
-            //            string str = "No Master data, You input wrong the your SECTION-CODE \n";
-            //            str += "althrough you log-in sucessed,the information will NOT send to DB \n";
-            //            MessageBox.Show(str, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            //            Parameter.ErrorLoadFile = true;
-            //        }
-            //        else
-            //        {
-            //            Parameter.ErrorLoadFile = false;
-            //        }
-            //    }
 
-            //}
 
-        }
+        //}
 
 
         #region THREAD POOL 
@@ -280,9 +260,9 @@ namespace StockMonitoringDotnetFramwork
             string file3 = string.Format("{0}\\PortSetting3.txt", Parameter.PortSetting);
             string file4 = string.Format("{0}\\PortSetting4.txt", Parameter.PortSetting);
             LoadSettingAndOpenSerialPort(1, file1, serialPort1);
-            LoadSettingAndOpenSerialPort(2, file2, serialPort2);
-            LoadSettingAndOpenSerialPort(3, file3, serialPort3);
-            LoadSettingAndOpenSerialPort(4, file4, serialPort4);
+            //LoadSettingAndOpenSerialPort(2, file2, serialPort2);
+            //LoadSettingAndOpenSerialPort(3, file3, serialPort3);
+            //LoadSettingAndOpenSerialPort(4, file4, serialPort4);
             Loadpattern();
 
         }
@@ -303,15 +283,18 @@ namespace StockMonitoringDotnetFramwork
         {
             try
             {
-                string path = string.Format("{0}\\pattern.txt", Parameter.PortSetting);
-                string data = File.ReadAllText(path);
-                string[] parts = data.Split(',');
-                if (parts.Length > 3)
+                using (var db = new MyContext())
                 {
-                    Parameter.Patterns.TotalLength = Convert.ToInt32(parts[0]);
-                    Parameter.Patterns.Start = Convert.ToInt32(parts[1]);
-                    Parameter.Patterns.Length = Convert.ToInt32(parts[2]);
+                    var pattern = db.QRDataPatterns.Where(x => x.ID == 1).FirstOrDefault();
+                    if (pattern != null)
+                    {
+                        Parameter.Patterns.TotalLength = pattern.TotalOfCharactor;
+                        Parameter.Patterns.Start = pattern.StartCharactor;
+                        Parameter.Patterns.Length = pattern.NumberOfCharactor;
+                        return;
+                    }
                 }
+
             }
             catch (Exception e)
             {
@@ -324,23 +307,47 @@ namespace StockMonitoringDotnetFramwork
             try
             {
                 string setting = File.ReadAllText(destination);
-
-                string[] parts = setting.Split(',');
-                if (parts.Length == 6)
+                Comport comp = new Comport();
+                using (var db = new MyContext())
                 {
-                    string comport = parts[0];
-                    string BaudRate = parts[1];
-                    string DataBits = parts[3];
-                    string stopbit = parts[4];
-                    string parity = parts[2];
-                    string mode = parts[5];
-                    serialPort.PortName = comport;
-                    serialPort.BaudRate = Convert.ToInt32(BaudRate);
-                    serialPort.Parity = (Parity)Enum.Parse(typeof(Parity), parity);
-                    serialPort.StopBits = (StopBits)Enum.Parse(typeof(StopBits), stopbit);
-                    serialPort.DataBits = Convert.ToInt16(DataBits);
+                    try
+                    {
+                        comp = db.Comports.Where(x => x.ID == port).FirstOrDefault();
+                    }
+                    catch (Exception ex)
+                    {
 
-                    serialPort.Handshake = Handshake.None;
+                        string msg = ex.Message;
+                    }
+
+                }
+
+
+
+                if (comp != null)
+                {
+                    string comport = comp.PortName;
+                    string BaudRate = comp.Baudrate;
+                    string DataBits = comp.DataBits;
+                    string stopbit = comp.Stopbit;
+                    string parity = comp.Parity;
+                    string mode = comp.Direction;
+                    string handshake = comp.Handshake;
+
+                    serialPort.PortName = comp.PortName;
+                    serialPort.BaudRate = Convert.ToInt32(comp.Baudrate);
+                    serialPort.Parity = (Parity)Enum.Parse(typeof(Parity), comp.Parity);
+                    serialPort.StopBits = (StopBits)Enum.Parse(typeof(StopBits), comp.Stopbit);
+                    serialPort.DataBits = Convert.ToInt16(comp.DataBits);
+
+                    //serialPort.Encoding = System.Text.Encoding.UTF8;
+                    serialPort.Encoding = Encoding.ASCII; // Thai
+                    serialPort.DtrEnable = true;
+                    serialPort.RtsEnable = true;
+
+                    //serialPort.Handshake = Handshake.None;
+                    serialPort.Handshake = (Handshake)Enum.Parse(typeof(Handshake), comp.Handshake);
+
                     int maxRetries = 3;
                     const int sleepTimeInMs = 500;
                     while (maxRetries > 0)
@@ -355,29 +362,29 @@ namespace StockMonitoringDotnetFramwork
                                 {
                                     case 1:
                                         serialPort.DataReceived += new SerialDataReceivedEventHandler(DataReceivedHandler1);
-                                        //BtnPort1.BackColor = Color.FromArgb(0, 255, 0);
+                                        button1.BackColor = Color.FromArgb(0, 255, 0);
                                         timer1.Enabled = true;
                                         Parameter.Direction1 = mode;
-                                        //LbSetting1.Text = string.Format("{0} : {1},{2},{3},{4},{5}", mode, comport, BaudRate, DataBits, stopbit, parity);
+                                        textBox1.Text = string.Format("{0} : {1},{2},{3},{4},{5},{6}", mode, comport, BaudRate, DataBits, stopbit, parity, handshake);
                                         break;
                                     case 2:
                                         serialPort.DataReceived += new SerialDataReceivedEventHandler(DataReceivedHandler2);
-                                        //BtnPort2.BackColor = Color.FromArgb(0, 255, 0);
+                                        button1.BackColor = Color.FromArgb(0, 255, 0);
                                         Parameter.Direction2 = mode;
-                                        //LbSetting2.Text = string.Format("{0} : {1},{2},{3},{4},{5}", mode, comport, BaudRate, DataBits, stopbit, parity);
+                                        textBox3.Text = string.Format("{0} : {1},{2},{3},{4},{5},{6}", mode, comport, BaudRate, DataBits, stopbit, parity, handshake);
                                         timer2.Enabled = true;
                                         break;
                                     case 3:
                                         serialPort.DataReceived += new SerialDataReceivedEventHandler(DataReceivedHandler3);
-                                        //BtnPort3.BackColor = Color.FromArgb(0, 255, 0);
-                                        //LbSetting3.Text = string.Format("{0} : {1},{2},{3},{4},{5}", mode, comport, BaudRate, DataBits, stopbit, parity);
+                                        button1.BackColor = Color.FromArgb(0, 255, 0);
+                                        textBox5.Text = string.Format("{0} : {1},{2},{3},{4},{5},{6}", mode, comport, BaudRate, DataBits, stopbit, parity, handshake);
                                         timer3.Enabled = true;
                                         Parameter.Direction3 = mode;
                                         break;
                                     case 4:
                                         serialPort.DataReceived += new SerialDataReceivedEventHandler(DataReceivedHandler4);
-                                        //BtnPort4.BackColor = Color.FromArgb(0, 255, 0);
-                                        //LbSetting4.Text = string.Format("{0} : {1},{2},{3},{4},{5}", mode, comport, BaudRate, DataBits, stopbit, parity);
+                                        button1.BackColor = Color.FromArgb(0, 255, 0);
+                                        textBox7.Text = string.Format("{0} : {1},{2},{3},{4},{5},{6}", mode, comport, BaudRate, DataBits, stopbit, parity, handshake);
                                         timer4.Enabled = true;
                                         Parameter.Direction4 = mode;
                                         break;
@@ -406,7 +413,7 @@ namespace StockMonitoringDotnetFramwork
             }
             catch (Exception)
             {
-                throw;
+                //throw;
             }
 
         }
@@ -414,181 +421,246 @@ namespace StockMonitoringDotnetFramwork
         #endregion
 
         #region Data Receivece
+
+        //public Action MyAction = () => { };
+
+
         private static void DataReceivedHandler1(object sender, SerialDataReceivedEventArgs e)
         {
 
-            SerialPort sp = (SerialPort)sender;
-            //ReadingText1 = sp.ReadExisting().Trim('\r');
-            try
+
+            var ReadingText = serialPort1.ReadExisting();   // อ่านเฉพาะที่มีอยู่ตอนนั้น
+            buffer1.Append(ReadingText);
+
+            string result = buffer1.ToString();
+
+            if (buffer1.ToString().EndsWith("\r") && buffer1.Length >= Parameter.Patterns.Length) // || buffer.ToString().EndsWith("\r\n")) 
             {
-                ReadingText1 = sp.ReadExisting();
-                if (!String.IsNullOrEmpty(ReadingText1))
+                string result_clean = buffer1.ToString().Trim();
+
+                buffer1.Clear();
+
+                if (Instance.richTextBox1.InvokeRequired)
                 {
-                    ReadingText1 = ReadingText1.Trim('\r');
-
-
+                    Instance.richTextBox1.Invoke(new Action(() =>
+                    {
+                        Instance.richTextBox1.Text = result_clean;
+                    }));
                 }
-            }
-            catch (Exception)
-            {
 
-                throw;
+                string text_part = result_clean.Substring(Parameter.Patterns.Start, Parameter.Patterns.Length);
+
+                if (Instance.textBox2.InvokeRequired)
+                {
+                    Instance.textBox2.Invoke(new Action(() =>
+                    {
+                        Instance.textBox2.Text = text_part;
+                    }));
+                }
+
+                Counter1++;
+                serialPort1.DiscardInBuffer();
+                Console.WriteLine("Data Received Port 1:{0} : {1}", Counter1, result);
             }
 
-            Counter1++;
-            serialPort1.DiscardInBuffer();
-            Console.WriteLine("Data Received Port 1:{0} : {1}", Counter1, ReadingText1);
+
         }
 
         private static void DataReceivedHandler2(object sender, SerialDataReceivedEventArgs e)
         {
-            SerialPort sp = (SerialPort)sender;
-            //ReadingText2 = sp.ReadExisting().Trim('\r');
-            try
+            var ReadingText = serialPort2.ReadExisting();   // อ่านเฉพาะที่มีอยู่ตอนนั้น
+            buffer1.Append(ReadingText);
+
+            string result = buffer2.ToString();
+
+            if (buffer2.ToString().EndsWith("\r") && buffer2.Length >= Parameter.Patterns.Length) // || buffer.ToString().EndsWith("\r\n")) 
             {
-                ReadingText2 = sp.ReadExisting();
-                if (!String.IsNullOrEmpty(ReadingText2))
+                string result_clean = buffer2.ToString().Trim();
+
+                buffer2.Clear();
+
+                if (Instance.richTextBox2.InvokeRequired)
                 {
-                    ReadingText2 = ReadingText2.Trim('\r');
+                    Instance.richTextBox2.Invoke(new Action(() =>
+                    {
+                        Instance.richTextBox2.Text = result_clean;
+                    }));
                 }
-            }
-            catch (Exception)
-            {
 
-                throw;
-            }
+                string text_part = result_clean.Substring(Parameter.Patterns.Start, Parameter.Patterns.Length);
 
-            Counter2++;
-            serialPort2.DiscardInBuffer();
-            Console.WriteLine("Data Received Port 2:{0} : {1}", Counter2, ReadingText2);
+                if (Instance.textBox4.InvokeRequired)
+                {
+                    Instance.textBox4.Invoke(new Action(() =>
+                    {
+                        Instance.textBox4.Text = text_part;
+                    }));
+                }
+
+                Counter2++;
+                serialPort2.DiscardInBuffer();
+                Console.WriteLine("Data Received Port 1:{0} : {1}", Counter2, result);
+            }
         }
 
         private static void DataReceivedHandler3(object sender, SerialDataReceivedEventArgs e)
         {
-            SerialPort sp = (SerialPort)sender;
-            //ReadingText3 = sp.ReadExisting().Trim('\r');
-            try
-            {
-                ReadingText3 = sp.ReadExisting();
-                if (!String.IsNullOrEmpty(ReadingText3))
-                {
-                    ReadingText3 = ReadingText3.Trim('\r');
-                }
-            }
-            catch (Exception)
-            {
+            var ReadingText = serialPort3.ReadExisting();   // อ่านเฉพาะที่มีอยู่ตอนนั้น
+            buffer3.Append(ReadingText);
 
-                throw;
+            string result = buffer3.ToString();
+
+            if (buffer3.ToString().EndsWith("\r") && buffer3.Length >= Parameter.Patterns.Length) // || buffer.ToString().EndsWith("\r\n")) 
+            {
+                string result_clean = buffer3.ToString().Trim();
+
+                buffer3.Clear();
+
+                if (Instance.richTextBox3.InvokeRequired)
+                {
+                    Instance.richTextBox3.Invoke(new Action(() =>
+                    {
+                        Instance.richTextBox3.Text = result_clean;
+                    }));
+                }
+
+                string text_part = result_clean.Substring(Parameter.Patterns.Start, Parameter.Patterns.Length);
+
+                if (Instance.textBox6.InvokeRequired)
+                {
+                    Instance.textBox6.Invoke(new Action(() =>
+                    {
+                        Instance.textBox6.Text = text_part;
+                    }));
+                }
+
+                Counter3++;
+                serialPort3.DiscardInBuffer();
+                Console.WriteLine("Data Received Port 1:{0} : {1}", Counter3, result);
             }
-            Counter3++;
-            serialPort3.DiscardInBuffer();
-            Console.WriteLine("Data Received Port 1:{0} : {1}", Counter3, ReadingText3);
         }
 
         private static void DataReceivedHandler4(object sender, SerialDataReceivedEventArgs e)
         {
-            SerialPort sp = (SerialPort)sender;
-            //ReadingText4 = sp.ReadExisting().Trim('\r');
-            try
-            {
-                ReadingText4 = sp.ReadExisting();
-                if (!String.IsNullOrEmpty(ReadingText4))
-                {
-                    ReadingText4 = ReadingText4.Trim('\r');
-                }
-            }
-            catch (Exception)
-            {
+            var ReadingText = serialPort4.ReadExisting();   // อ่านเฉพาะที่มีอยู่ตอนนั้น
+            buffer4.Append(ReadingText);
 
-                throw;
+            string result = buffer4.ToString();
+
+            if (buffer4.ToString().EndsWith("\r") && buffer4.Length >= Parameter.Patterns.Length) // || buffer.ToString().EndsWith("\r\n")) 
+            {
+                string result_clean = buffer4.ToString().Trim();
+
+                buffer4.Clear();
+
+                if (Instance.richTextBox4.InvokeRequired)
+                {
+                    Instance.richTextBox4.Invoke(new Action(() =>
+                    {
+                        Instance.richTextBox4.Text = result_clean;
+                    }));
+                }
+
+                string text_part = result_clean.Substring(Parameter.Patterns.Start, Parameter.Patterns.Length);
+
+                if (Instance.textBox8.InvokeRequired)
+                {
+                    Instance.textBox8.Invoke(new Action(() =>
+                    {
+                        Instance.textBox8.Text = text_part;
+                    }));
+                }
+
+                Counter4++;
+                serialPort4.DiscardInBuffer();
+                Console.WriteLine("Data Received Port 1:{0} : {1}", Counter4, result);
             }
-            Counter4++;
-            serialPort4.DiscardInBuffer();
-            Console.WriteLine("Data Received Port 2:{0} : {1}", Counter4, ReadingText4);
         }
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            timer1.Enabled = false;
-            if (ReadingText1 != null)
-            {
-                //TbRaw1.Text = ReadingText1;
+            //timer1.Enabled = false;
 
-            }
+            //if (result1 != null)
+            //{
+            //    richTextBox1.Text = result1;
 
-            if (Parameter.User != null && ReadingText1 != null && ReadingText1 != "")
-            {
-                if (Parameter.Permition == "on" && ReadingText1.Length == Parameter.Patterns.TotalLength)
-                {
-                    ReadingText1 = ReadingText1.Substring(Parameter.Patterns.Start, Parameter.Patterns.Length);
-                    AsyncInsertTable1(ReadingText1);
-                }
-                //Message1.Text = String.Format("Count: {0} ,P/N : {1}", Counter1, ReadingText1);
-                ReadingText1 = null;
-            }
-            timer1.Enabled = true;
+            //}
+
+            //if (result1 != null && result1 != "")
+            //{
+            //    if (ReadingText1.Length == Parameter.Patterns.TotalLength)
+            //    {
+            //        ReadingText1 = ReadingText1.Substring(Parameter.Patterns.Start, Parameter.Patterns.Length);
+
+            //        //AsyncInsertTable1(ReadingText1);
+            //    }
+            //    //Message1.Text = String.Format("Count: {0} ,P/N : {1}", Counter1, ReadingText1);
+            //    result1 = null;
+            //}
+            //timer1.Enabled = true;
         }
 
         private void timer2_Tick(object sender, EventArgs e)
         {
-            timer2.Enabled = false;
-            if (ReadingText2 != null)
-            {
-                //TbRaw2.Text = ReadingText2;
+            //timer2.Enabled = false;
+            //if (ReadingText2 != null)
+            //{
+            //    richTextBox2.Text = ReadingText2;
 
-            }
+            //}
 
-            if (Parameter.User != null && ReadingText2 != null && ReadingText2 != "")
-            {
-                if (Parameter.Permition == "on" && ReadingText2.Length == Parameter.Patterns.TotalLength)
-                {
-                    ReadingText2 = ReadingText2.Substring(Parameter.Patterns.Start, Parameter.Patterns.Length);
-                    AsyncInsertTable2(ReadingText2);
-                }
-                //Message2.Text = String.Format("Count: {0} ,P/N : {1}", Counter2, ReadingText2);
-                ReadingText2 = null;
-            }
-            timer2.Enabled = true;
+            //if (Parameter.User != null && ReadingText2 != null && ReadingText2 != "")
+            //{
+            //    if (Parameter.Permition == "on" && ReadingText2.Length == Parameter.Patterns.TotalLength)
+            //    {
+            //        ReadingText2 = ReadingText2.Substring(Parameter.Patterns.Start, Parameter.Patterns.Length);
+            //        AsyncInsertTable2(ReadingText2);
+            //    }
+            //    //Message2.Text = String.Format("Count: {0} ,P/N : {1}", Counter2, ReadingText2);
+            //    ReadingText2 = null;
+            //}
+            //timer2.Enabled = true;
         }
 
         private void timer3_Tick(object sender, EventArgs e)
         {
-            timer3.Enabled = false;
+            //    timer3.Enabled = false;
 
-            if (ReadingText3 != null)
-                //TbRaw3.Text = ReadingText3;
+            //    if (ReadingText3 != null)
+            //        richTextBox3.Text = ReadingText3;
 
-            if (Parameter.User != null && ReadingText3 != null && ReadingText3 != "")
-            {
-                if (Parameter.Permition == "on" && ReadingText3.Length == Parameter.Patterns.TotalLength)
-                {
-                    ReadingText3 = ReadingText3.Substring(Parameter.Patterns.Start, Parameter.Patterns.Length);
-                    AsyncInsertTable3(ReadingText3);
-                }
-                //Message3.Text = String.Format("Count: {0} ,P/N : {1}", Counter3, ReadingText3);
-                ReadingText3 = null;
-            }
-            timer3.Enabled = true;
+            //    if (Parameter.User != null && ReadingText3 != null && ReadingText3 != "")
+            //    {
+            //        if (Parameter.Permition == "on" && ReadingText3.Length == Parameter.Patterns.TotalLength)
+            //        {
+            //            ReadingText3 = ReadingText3.Substring(Parameter.Patterns.Start, Parameter.Patterns.Length);
+            //            AsyncInsertTable3(ReadingText3);
+            //        }
+            //        //Message3.Text = String.Format("Count: {0} ,P/N : {1}", Counter3, ReadingText3);
+            //        ReadingText3 = null;
+            //    }
+            //    timer3.Enabled = true;
         }
 
         private void timer4_Tick(object sender, EventArgs e)
         {
-            timer4.Enabled = false;
+            //timer4.Enabled = false;
 
-            if (ReadingText4 != null)
-                //TbRaw4.Text = ReadingText4;
+            //if (ReadingText4 != null)
+            //    richTextBox4.Text = ReadingText4;
 
-            if (Parameter.User != null && ReadingText4 != null && ReadingText4 != "")
-            {
-                if (Parameter.Permition == "on" && ReadingText4.Length == Parameter.Patterns.TotalLength)
-                {
-                    ReadingText4 = ReadingText4.Substring(Parameter.Patterns.Start, Parameter.Patterns.Length);
-                    AsyncInsertTable4(ReadingText4);
-                }
-                //Message4.Text = String.Format("Count: {0} ,P/N : {1}", Counter4, ReadingText4);
-                ReadingText4 = null;
-            }
-            timer4.Enabled = true;
+            //if (Parameter.User != null && ReadingText4 != null && ReadingText4 != "")
+            //{
+            //    if (Parameter.Permition == "on" && ReadingText4.Length == Parameter.Patterns.TotalLength)
+            //    {
+            //        ReadingText4 = ReadingText4.Substring(Parameter.Patterns.Start, Parameter.Patterns.Length);
+            //        AsyncInsertTable4(ReadingText4);
+            //    }
+            //    //Message4.Text = String.Format("Count: {0} ,P/N : {1}", Counter4, ReadingText4);
+            //    ReadingText4 = null;
+            //}
+            //timer4.Enabled = true;
         }
 
 
@@ -746,93 +818,6 @@ namespace StockMonitoringDotnetFramwork
                         Sectioncode = s.Key
                     });
 
-                //using (var db = new WGRContext())
-                //{
-                //    foreach (var st in section)
-                //    {
-                //        var PartQty = record
-                //            .Where(z => z.SectionCode == st.Sectioncode)
-                //            .GroupBy(s => s.PartNumber)
-                //            .Select(s => new
-                //            {
-                //                PartNumber = s.Key,
-                //                Qty = s.Sum(a => a.PiecePerKanban)
-                //            }).ToList();
-
-
-                //        var stocklist = db.StockLists.Where(s => s.SectionCode == st.Sectioncode)
-                //            .Select(s => new StockListOnly
-                //            {
-                //                PartNumber = s.PartNumber,
-                //                Balance = Convert.ToInt32(s.Balance),
-                //                PiecePerKanban = Convert.ToInt32(s.PiecePerKanban),
-                //                HHLimit = Convert.ToInt32(s.Hhlimit),
-                //                HLimit = Convert.ToInt32(s.Hlimit),
-                //                LLimit = Convert.ToInt32(s.Llimit),
-                //                LLLimt = Convert.ToInt32(s.Lllimt),
-                //                ActivePn = s.ActivePn
-
-                //            }).ToList();
-
-
-
-
-                //        foreach (var l in PartQty)
-                //        {
-                //            StockListOnly sl = stocklist.Where(p => p.PartNumber == l.PartNumber).FirstOrDefault();
-                //            if (sl != null)
-                //            {
-                //                var sm = new StockList();
-                //                sm.SectionCode = st.Sectioncode;
-                //                sm.PartNumber = l.PartNumber;
-                //                sm.Balance = l.Qty + Convert.ToInt32(sl.Balance);
-                //                sm.Balance = sm.Balance < 0 ? 0 : sm.Balance;
-                //                sm.PiecePerKanban = sl.PiecePerKanban;
-                //                sm.Hhlimit = sl.HHLimit;
-                //                sm.Hlimit = sl.HLimit;
-                //                sm.Llimit = sl.LLimit;
-                //                sm.Lllimt = sl.LLLimt;
-                //                sm.ActivePn = sl.ActivePn;
-                //                db.Update(sm);
-                //                db.SaveChanges();
-
-
-                //                var listlog = new StockListLog
-                //                {
-                //                    SectionCode = sm.SectionCode,
-                //                    Registdatetime = DateTime.Now,
-                //                    PartNumber = sm.PartNumber,
-                //                    Balance = sm.Balance
-                //                };
-                //                db.StockListLogs.Add(listlog);
-                //                db.SaveChanges();
-
-
-                //                //db.StockListLogs.Add(new StockListLog
-                //                //{
-
-                //                //    SectionCode = sm.SectionCode,
-                //                //    Registdatetime = DateTime.Now,
-                //                //    PartNumber = sm.PartNumber,
-                //                //    Balance = sm.Balance
-
-                //                //});
-                //                //  db.SaveChanges();
-
-
-
-
-
-                //            }
-                //        }
-
-
-                //    }
-
-
-                //}
-
-
 
 
 
@@ -850,25 +835,7 @@ namespace StockMonitoringDotnetFramwork
                     stockdatainput.Add(buff);
 
 
-
-                    //    //db.StockDataInputs.Add(new StockDataInput
-                    //    //{
-                    //    //    SectionCode = predata.SectionCode,
-                    //    //    RegistDate = predata.RegistDate,
-                    //    //    PartNumber = predata.PartNumber,
-                    //    //    PiecePerKanban = predata.PiecePerKanban,
-                    //    //    UserId = predata.UserId,
-                    //    //    Status = false
-                    //    //});
-
-
-
                 }
-                //using (var db1 = new WGRContext())
-                //{
-                //    db1.StockDataInputs.AddRange(stockdatainput);
-                //    db1.SaveChanges();
-                //}
 
 
                 foreach (string file in result)
@@ -877,26 +844,9 @@ namespace StockMonitoringDotnetFramwork
                 }
 
 
-
-                //if (richTextBox1.InvokeRequired)
-                //{
-                //    richTextBox1.Invoke(new Action(() =>
-                //    {
-                //        richTextBox1.Text = string.Empty;
-                //    }));
-                //}
-
             }
-            catch (Exception e)
+            catch
             {
-                //if (richTextBox1.InvokeRequired)
-                //{
-                //    richTextBox1.Invoke(new Action(() =>
-                //    {
-                //        richTextBox1.Text = e.Message;
-                //    }));
-                //}
-                //throw;
 
             }
 
@@ -966,7 +916,7 @@ namespace StockMonitoringDotnetFramwork
             InitialSetup();
         }
 
-      
+
 
 
 
@@ -1087,7 +1037,7 @@ namespace StockMonitoringDotnetFramwork
                 throw;
             }
         }
-        private async void BtnTest2_Click(object sender, EventArgs e)
+        private void BtnTest2_Click(object sender, EventArgs e)
         {
             try
             {
@@ -1113,7 +1063,7 @@ namespace StockMonitoringDotnetFramwork
             }
         }
 
-      
+
         private void StockBalanceHistoryClosed_Closed(object sender, EventArgs e)
         {
             Console.WriteLine();
@@ -1148,7 +1098,7 @@ namespace StockMonitoringDotnetFramwork
         #region MEMU
 
 
-     
+
 
         private void cH1ToolStripMenuItem_Click(object sender, EventArgs e)
         {

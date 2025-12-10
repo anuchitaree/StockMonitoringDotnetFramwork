@@ -30,7 +30,11 @@ namespace StockMonitoringDotnetFramwork.ChildForm
                 DataBits = CmbDatalength.SelectedItem.ToString(),
                 Stopbit = CmbStopBit.SelectedItem.ToString(),
                 Parity = CmbParity.SelectedItem.ToString(),
+                Handshake= cmbHandshake.SelectedItem.ToString(),
                 Direction = CmbDatDirection.SelectedItem.ToString(),
+                Pattern1 = int.Parse(cmbDp1.SelectedItem.ToString()),
+                Pattern2 = int.Parse(cmbDp2.SelectedItem.ToString()),
+                Pattern3 = int.Parse(cmbDp3.SelectedItem.ToString()),
             };
             try
             {
@@ -45,11 +49,16 @@ namespace StockMonitoringDotnetFramwork.ChildForm
                     else
                     {
                         setting.PortName = comport.PortName;
+                        setting.Baudrate = comport.Baudrate;
                         setting.Stopbit = comport.Stopbit;
                         setting.Parity = comport.Parity;
                         setting.Direction = comport.Direction;
                         setting.DataBits = comport.DataBits;
                         setting.Stopbit = comport.Stopbit;
+                        setting.Handshake = comport.Handshake;
+                        setting.Pattern1 = comport.Pattern1;
+                        setting.Pattern2 = comport.Pattern2;
+                        setting.Pattern3 = comport.Pattern3;
                         db.SaveChanges();
                     }
 
@@ -87,11 +96,16 @@ namespace StockMonitoringDotnetFramwork.ChildForm
             string[] lenght = new string[] { "7", "8", "9" };
             string[] stopbit = new string[] { "1", "1.5", "2" };
             string[] direction = new string[] { "IN", "OUT" };
+            string[] handshake = new string[] {"None", "XOnXOff", "RequestToSend", "RequestToSendXOnXOff" };
             CmbBaudRate.DataSource = baudrate;
             CmbParity.DataSource = parity;
             CmbDatalength.DataSource = lenght;
             CmbStopBit.DataSource = stopbit;
+            cmbHandshake.DataSource = handshake;
             CmbDatDirection.DataSource = direction;
+            cmbDp1.DataSource = Enumerable.Range(1, 10).ToList();
+            cmbDp2.DataSource = Enumerable.Range(1, 10).ToList();
+            cmbDp3.DataSource = Enumerable.Range(1, 10).ToList();
 
 
 
@@ -109,6 +123,10 @@ namespace StockMonitoringDotnetFramwork.ChildForm
                     CmbDatalength.SelectedItem = setting.DataBits;
                     CmbStopBit.SelectedItem = setting.Stopbit;
                     CmbDatDirection.SelectedItem = setting.Direction;
+                    cmbHandshake.SelectedItem = setting.Handshake;
+                    cmbDp1.SelectedItem = setting.Pattern1;
+                    cmbDp2.SelectedItem = setting.Pattern2;
+                    cmbDp3.SelectedItem = setting.Pattern3;
                 }
                 else
                 {
@@ -118,6 +136,9 @@ namespace StockMonitoringDotnetFramwork.ChildForm
                     CmbDatalength.SelectedItem = -1;
                     CmbStopBit.SelectedItem = -1;
                     CmbDatDirection.SelectedItem = -1;
+                    cmbDp1.SelectedItem = -1;
+                    cmbDp2.SelectedItem = -1;
+                    cmbDp3.SelectedItem = -1;
                 }
             }
 

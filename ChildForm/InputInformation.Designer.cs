@@ -387,7 +387,7 @@
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
             this.Name = "InputInformation";
-            this.Size = new System.Drawing.Size(332, 395);
+            this.Size = new System.Drawing.Size(437, 395);
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.groupBox1.ResumeLayout(false);
