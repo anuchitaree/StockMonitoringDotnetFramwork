@@ -36,6 +36,8 @@ namespace StockMonitoringDotnetFramwork.Models
         public int Pattern2 { get; set; }
         public int Pattern3 { get; set; }
 
+        public DateTime Lastedit { get; set; }
+        public string Enable { get; set; }
 
     }
 }

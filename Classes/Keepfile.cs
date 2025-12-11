@@ -11,7 +11,7 @@ namespace StockMonitoringDotnetFramwork.Classes
     public static class Keepfile
     {
 
-        public async static void SerialSetting()
+        public  static void SerialSetting()
         {
             string root = Parameter.PortSetting;
             string PortSetting1 = string.Format("{0}\\PortSetting1.txt", root);
@@ -58,7 +58,7 @@ namespace StockMonitoringDotnetFramwork.Classes
         }
 
 
-        public async static void ReadSerialSetting(int port, SerialPort serialPort)
+        public  static void ReadSerialSetting(int port, SerialPort serialPort)
         {
             string root = Parameter.PortSetting;
             string PortSetting1 = string.Format("{0}\\PortSetting1.txt", root);

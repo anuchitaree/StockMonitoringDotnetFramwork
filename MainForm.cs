@@ -1,6 +1,7 @@
 ﻿using StockMonitoringDotnetFramwork.ChildForm;
 using StockMonitoringDotnetFramwork.Classes;
 using StockMonitoringDotnetFramwork.Data;
+using StockMonitoringDotnetFramwork.Interfaces;
 using StockMonitoringDotnetFramwork.Models;
 using System;
 using System.Collections.Generic;
@@ -14,21 +15,21 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace StockMonitoringDotnetFramwork
 {
     public partial class MainForm : Form
     {
-        private SerialPort port;
+
+        private InputInformation _inputInformation;
+
 
         private static readonly SerialPort serialPort1 = new SerialPort();
         private static readonly SerialPort serialPort2 = new SerialPort();
         private static readonly SerialPort serialPort3 = new SerialPort();
         private static readonly SerialPort serialPort4 = new SerialPort();
-        //private static string ReadingText1;
-        //private static string ReadingText2;
-        //private static string ReadingText3;
-        //private static string ReadingText4;
+
         private static int Counter1;
         private static int Counter2;
         private static int Counter3;
@@ -53,9 +54,47 @@ namespace StockMonitoringDotnetFramwork
             InitializeComponent();
             Instance = this;
 
+            StateHub.OnChanged += StateHub_OnChanged;
 
+            _inputInformation = new InputInformation();
+
+            //_inputInformation.Dock = DockStyle.Fill;
+            //this.Controls.Add(_inputInformation);
+
+            //InputInformation uc = new InputInformation();
+            //uc.Dock = DockStyle.Fill;
+            //panel3.Controls.Clear();
+            //panel3.Controls.Add(_inputInformation);
         }
 
+        private void StateHub_OnChanged(string key, object value)
+        {
+            if (key == "Postsetting")
+            {
+                if ((int)value == 1)
+                {
+                    SerialPortSetting.Close(serialPort1);
+                    Reset_status((int)value);
+                    
+
+                    LoadSettingAndOpenSerialPort(1, serialPort1);
+                }
+            }
+        }
+        private void Reset_status(int ch)
+        {
+           switch (ch)
+            {
+                case 1:
+                    button1.BackColor = Color.FromArgb(225, 225, 225);
+                    StateHub.Raise("ch1_status", Color.FromArgb(255, 255, 255));
+                    StateHub.Raise("ch1_com", "");
+
+                    break;
+                default:
+                    break;
+            }
+        }
         //private void button1_Click(object sender, EventArgs e)
         //{
         //    //this.Visible = false;
@@ -73,11 +112,14 @@ namespace StockMonitoringDotnetFramwork
             IntialDataGridView(DgvShow);
 
 
-            //InputInformation uc = new InputInformation();
-            //uc.Dock = DockStyle.Fill;
-            //panel2.Controls.Clear();
-            //panel2.Controls.Add(uc);
 
+
+
+            //StateHub.Raise("ch1_com", textBox1.Text);
+            //StateHub.Raise("ch1_raw", richTextBox1.Text);
+            //StateHub.Raise("ch1_data", textBox2.Text);
+
+            //StateHub.Raise("Message", richTextBox1.Text);
 
         }
 
@@ -102,6 +144,8 @@ namespace StockMonitoringDotnetFramwork
 
 
         //}
+
+
 
 
         #region THREAD POOL 
@@ -253,16 +297,11 @@ namespace StockMonitoringDotnetFramwork
         #region Initial setup
         private void InitialSetup()
         {
-            Keepfile.SerialSetting();
+
             PortSettingDefault();
-            string file1 = string.Format("{0}\\PortSetting1.txt", Parameter.PortSetting);
-            string file2 = string.Format("{0}\\PortSetting2.txt", Parameter.PortSetting);
-            string file3 = string.Format("{0}\\PortSetting3.txt", Parameter.PortSetting);
-            string file4 = string.Format("{0}\\PortSetting4.txt", Parameter.PortSetting);
-            LoadSettingAndOpenSerialPort(1, file1, serialPort1);
-            //LoadSettingAndOpenSerialPort(2, file2, serialPort2);
-            //LoadSettingAndOpenSerialPort(3, file3, serialPort3);
-            //LoadSettingAndOpenSerialPort(4, file4, serialPort4);
+
+            LoadSettingAndOpenSerialPort(1, serialPort1);
+
             Loadpattern();
 
         }
@@ -302,11 +341,10 @@ namespace StockMonitoringDotnetFramwork
             }
 
         }
-        private void LoadSettingAndOpenSerialPort(int port, string destination, SerialPort serialPort)
+        private void LoadSettingAndOpenSerialPort(int port, SerialPort serialPort)
         {
             try
             {
-                string setting = File.ReadAllText(destination);
                 Comport comp = new Comport();
                 using (var db = new MyContext())
                 {
@@ -363,28 +401,34 @@ namespace StockMonitoringDotnetFramwork
                                     case 1:
                                         serialPort.DataReceived += new SerialDataReceivedEventHandler(DataReceivedHandler1);
                                         button1.BackColor = Color.FromArgb(0, 255, 0);
+                                        StateHub.Raise("ch1_status", Color.FromArgb(0, 255, 0));
                                         timer1.Enabled = true;
                                         Parameter.Direction1 = mode;
-                                        textBox1.Text = string.Format("{0} : {1},{2},{3},{4},{5},{6}", mode, comport, BaudRate, DataBits, stopbit, parity, handshake);
+                                        var setting1 = string.Format("{0} : {1},{2},{3},{4},{5},handshake:{6}", mode, comport, BaudRate, DataBits, stopbit, parity, handshake);
+                                        StateHub.Raise("ch1_com", setting1);
+
                                         break;
                                     case 2:
                                         serialPort.DataReceived += new SerialDataReceivedEventHandler(DataReceivedHandler2);
                                         button1.BackColor = Color.FromArgb(0, 255, 0);
                                         Parameter.Direction2 = mode;
-                                        textBox3.Text = string.Format("{0} : {1},{2},{3},{4},{5},{6}", mode, comport, BaudRate, DataBits, stopbit, parity, handshake);
+                                        var setting2 = string.Format("{0} : {1},{2},{3},{4},{5},handshake:{6}", mode, comport, BaudRate, DataBits, stopbit, parity, handshake);
+                                        StateHub.Raise("ch2_com", setting2);
                                         timer2.Enabled = true;
                                         break;
                                     case 3:
                                         serialPort.DataReceived += new SerialDataReceivedEventHandler(DataReceivedHandler3);
                                         button1.BackColor = Color.FromArgb(0, 255, 0);
-                                        textBox5.Text = string.Format("{0} : {1},{2},{3},{4},{5},{6}", mode, comport, BaudRate, DataBits, stopbit, parity, handshake);
+                                        var setting3 = string.Format("{0} : {1},{2},{3},{4},{5},handshake:{6}", mode, comport, BaudRate, DataBits, stopbit, parity, handshake);
+                                        StateHub.Raise("ch3_com", setting3);
                                         timer3.Enabled = true;
                                         Parameter.Direction3 = mode;
                                         break;
                                     case 4:
                                         serialPort.DataReceived += new SerialDataReceivedEventHandler(DataReceivedHandler4);
                                         button1.BackColor = Color.FromArgb(0, 255, 0);
-                                        textBox7.Text = string.Format("{0} : {1},{2},{3},{4},{5},{6}", mode, comport, BaudRate, DataBits, stopbit, parity, handshake);
+                                        var setting4 = string.Format("{0} : {1},{2},{3},{4},{5},handshake:{6}", mode, comport, BaudRate, DataBits, stopbit, parity, handshake);
+                                        StateHub.Raise("ch4_com", setting4);
                                         timer4.Enabled = true;
                                         Parameter.Direction4 = mode;
                                         break;
@@ -434,19 +478,15 @@ namespace StockMonitoringDotnetFramwork
 
             string result = buffer1.ToString();
 
-            if (buffer1.ToString().EndsWith("\r") && buffer1.Length >= Parameter.Patterns.Length) // || buffer.ToString().EndsWith("\r\n")) 
+            if (buffer1.ToString().EndsWith("\r")) // && buffer1.Length >= Parameter.Patterns.Length) // || buffer.ToString().EndsWith("\r\n")) 
             {
                 string result_clean = buffer1.ToString().Trim();
 
                 buffer1.Clear();
 
-                if (Instance.richTextBox1.InvokeRequired)
-                {
-                    Instance.richTextBox1.Invoke(new Action(() =>
-                    {
-                        Instance.richTextBox1.Text = result_clean;
-                    }));
-                }
+                StateHub.Raise("Portsetting_ch1", result);
+                StateHub.Raise("ch1_raw", result);
+                StateHub.Raise("raw_message", result);
 
                 string text_part = result_clean.Substring(Parameter.Patterns.Start, Parameter.Patterns.Length);
 
@@ -457,6 +497,7 @@ namespace StockMonitoringDotnetFramwork
                         Instance.textBox2.Text = text_part;
                     }));
                 }
+                StateHub.Raise("ch1_data", text_part);
 
                 Counter1++;
                 serialPort1.DiscardInBuffer();
@@ -479,13 +520,13 @@ namespace StockMonitoringDotnetFramwork
 
                 buffer2.Clear();
 
-                if (Instance.richTextBox2.InvokeRequired)
-                {
-                    Instance.richTextBox2.Invoke(new Action(() =>
-                    {
-                        Instance.richTextBox2.Text = result_clean;
-                    }));
-                }
+                //if (Instance.richTextBox2.InvokeRequired)
+                //{
+                //    Instance.richTextBox2.Invoke(new Action(() =>
+                //    {
+                //        Instance.richTextBox2.Text = result_clean;
+                //    }));
+                //}
 
                 string text_part = result_clean.Substring(Parameter.Patterns.Start, Parameter.Patterns.Length);
 
@@ -516,13 +557,13 @@ namespace StockMonitoringDotnetFramwork
 
                 buffer3.Clear();
 
-                if (Instance.richTextBox3.InvokeRequired)
-                {
-                    Instance.richTextBox3.Invoke(new Action(() =>
-                    {
-                        Instance.richTextBox3.Text = result_clean;
-                    }));
-                }
+                //if (Instance.richTextBox3.InvokeRequired)
+                //{
+                //    Instance.richTextBox3.Invoke(new Action(() =>
+                //    {
+                //        Instance.richTextBox3.Text = result_clean;
+                //    }));
+                //}
 
                 string text_part = result_clean.Substring(Parameter.Patterns.Start, Parameter.Patterns.Length);
 
@@ -553,13 +594,13 @@ namespace StockMonitoringDotnetFramwork
 
                 buffer4.Clear();
 
-                if (Instance.richTextBox4.InvokeRequired)
-                {
-                    Instance.richTextBox4.Invoke(new Action(() =>
-                    {
-                        Instance.richTextBox4.Text = result_clean;
-                    }));
-                }
+                //if (Instance.richTextBox4.InvokeRequired)
+                //{
+                //    Instance.richTextBox4.Invoke(new Action(() =>
+                //    {
+                //        Instance.richTextBox4.Text = result_clean;
+                //    }));
+                //}
 
                 string text_part = result_clean.Substring(Parameter.Patterns.Start, Parameter.Patterns.Length);
 
@@ -1244,5 +1285,21 @@ namespace StockMonitoringDotnetFramwork
             panel1.Controls.Add(uc);
         }
         #endregion
+
+        private void serialPortMonitorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _inputInformation.Dock = DockStyle.Fill;
+            panel1.Controls.Clear();
+            panel1.Controls.Add(_inputInformation);
+        }
+
+        private void connectionToServerSettingToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ConnectStockServer uc = new ConnectStockServer();
+            uc.Dock = DockStyle.Fill;
+
+            panel1.Controls.Clear();
+            panel1.Controls.Add(uc);
+        }
     }
 }

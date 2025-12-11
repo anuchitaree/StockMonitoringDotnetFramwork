@@ -94,10 +94,10 @@
             // 
             this.richTextBox1.Location = new System.Drawing.Point(64, 37);
             this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedHorizontal;
+            this.richTextBox1.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedVertical;
             this.richTextBox1.Size = new System.Drawing.Size(247, 37);
             this.richTextBox1.TabIndex = 6;
-            this.richTextBox1.Text = "3423423423423423lilluiyoiyhg";
+            this.richTextBox1.Text = "";
             // 
             // textBox1
             // 
@@ -106,7 +106,6 @@
             this.textBox1.ReadOnly = true;
             this.textBox1.Size = new System.Drawing.Size(247, 20);
             this.textBox1.TabIndex = 4;
-            this.textBox1.Text = "342342134";
             // 
             // label3
             // 
@@ -124,7 +123,6 @@
             this.textBox2.ReadOnly = true;
             this.textBox2.Size = new System.Drawing.Size(247, 20);
             this.textBox2.TabIndex = 4;
-            this.textBox2.Text = "32412432142134234";
             // 
             // label2
             // 
@@ -172,10 +170,10 @@
             // 
             this.richTextBox2.Location = new System.Drawing.Point(64, 37);
             this.richTextBox2.Name = "richTextBox2";
-            this.richTextBox2.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedHorizontal;
+            this.richTextBox2.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedVertical;
             this.richTextBox2.Size = new System.Drawing.Size(247, 37);
             this.richTextBox2.TabIndex = 6;
-            this.richTextBox2.Text = "3423423423423423lilluiyoiyhg";
+            this.richTextBox2.Text = "";
             // 
             // textBox3
             // 
@@ -184,7 +182,6 @@
             this.textBox3.ReadOnly = true;
             this.textBox3.Size = new System.Drawing.Size(247, 20);
             this.textBox3.TabIndex = 4;
-            this.textBox3.Text = "342342134";
             // 
             // label4
             // 
@@ -202,7 +199,6 @@
             this.textBox4.ReadOnly = true;
             this.textBox4.Size = new System.Drawing.Size(247, 20);
             this.textBox4.TabIndex = 4;
-            this.textBox4.Text = "32412432142134234";
             // 
             // label5
             // 
@@ -250,10 +246,10 @@
             // 
             this.richTextBox3.Location = new System.Drawing.Point(64, 37);
             this.richTextBox3.Name = "richTextBox3";
-            this.richTextBox3.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedHorizontal;
+            this.richTextBox3.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedVertical;
             this.richTextBox3.Size = new System.Drawing.Size(247, 37);
             this.richTextBox3.TabIndex = 6;
-            this.richTextBox3.Text = "3423423423423423lilluiyoiyhg";
+            this.richTextBox3.Text = "";
             // 
             // textBox5
             // 
@@ -262,7 +258,6 @@
             this.textBox5.ReadOnly = true;
             this.textBox5.Size = new System.Drawing.Size(247, 20);
             this.textBox5.TabIndex = 4;
-            this.textBox5.Text = "342342134";
             // 
             // label7
             // 
@@ -280,7 +275,6 @@
             this.textBox6.ReadOnly = true;
             this.textBox6.Size = new System.Drawing.Size(247, 20);
             this.textBox6.TabIndex = 4;
-            this.textBox6.Text = "32412432142134234";
             // 
             // label8
             // 
@@ -328,10 +322,10 @@
             // 
             this.richTextBox4.Location = new System.Drawing.Point(64, 37);
             this.richTextBox4.Name = "richTextBox4";
-            this.richTextBox4.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedHorizontal;
+            this.richTextBox4.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedVertical;
             this.richTextBox4.Size = new System.Drawing.Size(247, 37);
             this.richTextBox4.TabIndex = 6;
-            this.richTextBox4.Text = "3423423423423423lilluiyoiyhg";
+            this.richTextBox4.Text = "";
             // 
             // textBox7
             // 
@@ -340,7 +334,6 @@
             this.textBox7.ReadOnly = true;
             this.textBox7.Size = new System.Drawing.Size(247, 20);
             this.textBox7.TabIndex = 4;
-            this.textBox7.Text = "342342134";
             // 
             // label10
             // 
@@ -358,7 +351,6 @@
             this.textBox8.ReadOnly = true;
             this.textBox8.Size = new System.Drawing.Size(247, 20);
             this.textBox8.TabIndex = 4;
-            this.textBox8.Text = "32412432142134234";
             // 
             // label11
             // 
@@ -387,7 +379,7 @@
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
             this.Name = "InputInformation";
-            this.Size = new System.Drawing.Size(437, 395);
+            this.Size = new System.Drawing.Size(338, 395);
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.groupBox1.ResumeLayout(false);

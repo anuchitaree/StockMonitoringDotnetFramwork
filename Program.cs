@@ -1,4 +1,5 @@
-﻿using StockMonitoringDotnetFramwork.Data;
+﻿using StockMonitoringDotnetFramwork.ChildForm;
+using StockMonitoringDotnetFramwork.Data;
 using System;
 using System.Data.Entity;
 using System.Runtime.Remoting.Contexts;
@@ -33,7 +34,14 @@ namespace StockMonitoringDotnetFramwork
             }
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainForm());
+            //using (var login = new LoginForm())
+            //{
+            //    if (login.ShowDialog() == DialogResult.OK)
+            //    {
+                    Application.Run(new MainForm());
+            //    }
+            //}
+
         }
     }
 }

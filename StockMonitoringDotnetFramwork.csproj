@@ -106,6 +106,18 @@
     <Compile Include="ChildForm\AccountUserControl.Designer.cs">
       <DependentUpon>AccountUserControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="ChildForm\ConnectStockServer.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ChildForm\ConnectStockServer.Designer.cs">
+      <DependentUpon>ConnectStockServer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ChildForm\LoginForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ChildForm\LoginForm.Designer.cs">
+      <DependentUpon>LoginForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="ChildForm\PortSettings.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -124,11 +136,35 @@
     <Compile Include="ChildForm\InputInformation.Designer.cs">
       <DependentUpon>InputInformation.cs</DependentUpon>
     </Compile>
+    <Compile Include="ChildForm\StockAccumulate.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ChildForm\StockAccumulate.Designer.cs">
+      <DependentUpon>StockAccumulate.cs</DependentUpon>
+    </Compile>
     <Compile Include="ChildForm\StockBalanceUserControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="ChildForm\StockBalanceUserControl.Designer.cs">
       <DependentUpon>StockBalanceUserControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ChildForm\StockChart.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ChildForm\StockChart.Designer.cs">
+      <DependentUpon>StockChart.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ChildForm\StockNoificationLog.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ChildForm\StockNoificationLog.Designer.cs">
+      <DependentUpon>StockNoificationLog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ChildForm\TestSerialPort.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ChildForm\TestSerialPort.Designer.cs">
+      <DependentUpon>TestSerialPort.cs</DependentUpon>
     </Compile>
     <Compile Include="ChildForm\UpdateStockListUserControl.cs">
       <SubType>UserControl</SubType>
@@ -136,8 +172,11 @@
     <Compile Include="ChildForm\UpdateStockListUserControl.Designer.cs">
       <DependentUpon>UpdateStockListUserControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Classes\InitialDatagridview.cs" />
     <Compile Include="Data\MyContext.cs" />
     <Compile Include="Data\DBInitializer.cs" />
+    <Compile Include="Interfaces\IMessageReceiver.cs" />
+    <Compile Include="Interfaces\StateHub.cs" />
     <Compile Include="Models\Comport.cs" />
     <Compile Include="Classes\Keepfile.cs" />
     <Compile Include="Classes\Parameter.cs" />
@@ -151,10 +190,12 @@
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Models\Account.cs" />
+    <Compile Include="Models\InformationInputModel.cs" />
     <Compile Include="Models\PartnumberPattern.cs" />
     <Compile Include="Models\Pattern.cs" />
     <Compile Include="Models\QRDataPattern.cs" />
     <Compile Include="Models\ScanInput.cs" />
+    <Compile Include="Models\ServerConnection.cs" />
     <Compile Include="Models\SetData.cs" />
     <Compile Include="Models\StockDataInput.cs" />
     <Compile Include="Models\StockList.cs" />
@@ -165,6 +206,12 @@
     <EmbeddedResource Include="ChildForm\AccountUserControl.resx">
       <DependentUpon>AccountUserControl.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="ChildForm\ConnectStockServer.resx">
+      <DependentUpon>ConnectStockServer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ChildForm\LoginForm.resx">
+      <DependentUpon>LoginForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="ChildForm\PortSettings.resx">
       <DependentUpon>PortSettings.cs</DependentUpon>
     </EmbeddedResource>
@@ -173,6 +220,18 @@
     </EmbeddedResource>
     <EmbeddedResource Include="ChildForm\InputInformation.resx">
       <DependentUpon>InputInformation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ChildForm\StockAccumulate.resx">
+      <DependentUpon>StockAccumulate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ChildForm\StockChart.resx">
+      <DependentUpon>StockChart.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ChildForm\StockNoificationLog.resx">
+      <DependentUpon>StockNoificationLog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ChildForm\TestSerialPort.resx">
+      <DependentUpon>TestSerialPort.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
